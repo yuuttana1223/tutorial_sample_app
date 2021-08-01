@@ -3,6 +3,7 @@ RUN apt-get update -qq && apt-get install -y nodejs postgresql-client
 WORKDIR /tutorial_sample_app
 COPY Gemfile Gemfile.lock /tutorial_sample_app/
 RUN bundle install
+COPY . /tutorial_sample_app/
 
 # コンテナー起動時に毎回実行されるスクリプトを追加
 COPY entrypoint.sh /usr/bin/
