@@ -30,6 +30,7 @@ class UsersSignupTest < ActionDispatch::IntegrationTest
     end
     follow_redirect!
     assert_template "users/show"
+    assert is_logged_in?
     # 次のページに遷移した瞬間に文字だけ表示してflashはcookieから消える
     assert_not flash.empty?
   end

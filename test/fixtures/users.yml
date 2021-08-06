@@ -8,3 +8,9 @@
 # two:
 #   name: MyString
 #   email: MyString
+
+michael:
+  name: Michael Example
+  email: michael@example.com
+  # ERbコードでテストユーザー用の有効なパスワードを作成できる
+  password_digest: <%= User.digest('password') %>
