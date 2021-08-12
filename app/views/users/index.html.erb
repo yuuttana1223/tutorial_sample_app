@@ -1,0 +1,11 @@
+<% provide(:title, 'All users') %>
+<h1>All users</h1>
+
+<%# will_paginateはusersビューのコードの中から@usersオブジェクトを自動的に見つけ出し、それから他のページにアクセスするためのページネーションリンクを作成 %>
+<%= will_paginate %>
+
+<ul class="users">
+  <%= render  @users %>
+</ul>
+
+<%= will_paginate %>
