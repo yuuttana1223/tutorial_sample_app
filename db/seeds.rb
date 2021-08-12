@@ -5,3 +5,20 @@
 #
 #   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
 #   Character.create(name: 'Luke', movie: movies.first)
+# !はユーザーが無効な場合にfalseを返すのではなく例外を発生させる
+User.create!(name: "Example User",
+             email: "example@railstutorial.org",
+             password: "foobar",
+             password_confirmation: "foobar",
+             is_admin: true)
+
+99.times do |n|
+  # faker gemは開発環境以外では普通使わない
+  name = Faker::Name.name
+  email = "example-#{n + 1}@railstutorial.org"
+  password = "password"
+  User.create!(name: name,
+               email: email,
+               password: password,
+               password_confirmation: password)
+end

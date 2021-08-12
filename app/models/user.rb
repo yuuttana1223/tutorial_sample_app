@@ -18,7 +18,9 @@ class User < ApplicationRecord
   # authenticateメソッドが使える
   # 引数の文字列がパスワードと一致するとUserオブジェクトを、間違っているとfalseを返す
   has_secure_password
-  validates :password, presence: true, length: { minimum: 6 }
+  # allow_nilは2つの同じエラーメッセージが表示されるというバグを解決するため
+  # has_secure_passwordのvalidationとかぶるため
+  validates :password, presence: true, length: { minimum: 6 }, allow_nil: true
 
   def self.digest(string)
     # GitHubのコードから参照(Gemのbcryptでhas_secure_password)
