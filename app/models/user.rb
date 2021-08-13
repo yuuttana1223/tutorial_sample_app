@@ -66,7 +66,8 @@ class User < ApplicationRecord
 
     # update_attributesはバリデーションやコールバックが行われるが
     # update_columnsは行われない
-    update_columns(is_activated: true, activated_at: Time.zone.now)
+    # update_columns(is_activated: true, activated_at: Time.zone.now)
+    update_attributes(is_activated: true, activated_at: Time.zone.now)
   end
 
   # 有効化用のメールを送信する
