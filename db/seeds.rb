@@ -10,7 +10,9 @@ User.create!(name: "Example User",
              email: "example@railstutorial.org",
              password: "foobar",
              password_confirmation: "foobar",
-             is_admin: true)
+             is_admin: true,
+             is_activated: true,
+             activated_at: Time.zone.now)
 
 99.times do |n|
   # faker gemは開発環境以外では普通使わない
@@ -20,5 +22,7 @@ User.create!(name: "Example User",
   User.create!(name: name,
                email: email,
                password: password,
-               password_confirmation: password)
+               password_confirmation: password,
+               is_activated: true,
+               activated_at: Time.zone.now)
 end

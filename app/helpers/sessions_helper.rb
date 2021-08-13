@@ -23,7 +23,7 @@ module SessionsHelper
     elsif (user_id = cookies.signed[:user_id])
       # raise # テストがパスすれば、この部分がテストされていないことがわかる(RuntimeError例外を発生させる)
       user = User.find_by(id: user_id)
-      if user && user.authenticated?(cookies[:remember_token])
+      if user && user.authenticated?(:remember, cookies[:remember_token])
         log_in user
         @current_user = user
       end

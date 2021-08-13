@@ -4,11 +4,16 @@ class UsersController < ApplicationController
   before_action :admin_user, only: :destroy
 
   def index
-    @users = User.paginate(page: params[:page])
+    @users = User.where(is_activated: true).paginate(page: params[:page])
   end
 
   def show
     @user = User.find(params[:id])
+    # renderやredirect_toの戻り値がtrueなのを利用
+    # returnは二重レンダリングの問題を回避するため
+    # &&だと優先度の都合で駄目
+    # redirect_to root_url unless @user.is_activated?
+    redirect_to root_url and return unless @user.is_activated?
   end
 
   def new
@@ -18,13 +23,17 @@ class UsersController < ApplicationController
   def create
     # @user = User.new(name: "Foo Bar", email: "foo@invalid",
     #   password: "foo", password_confirmation: "bar")
+    # 上と同じ意味
     # @user = User.new(params[:user])
     @user = User.new(user_params)
     if @user.save
-      # ユーザー登録と同時にログイン
-      log_in @user
-      flash[:success] = "Welcome to the Sample App!"
-      redirect_to @user
+      @user.send_activation_email
+      flash[:info] = "Please check your email to activate your account."
+      redirect_to root_url
+      # ユーザー登録と同時にログイン アカウント有効化を実装するうえでは無意味な動作
+      # log_in @user
+      # flash[:success] = "Welcome to the Sample App!"
+      # redirect_to @user
     else
       render :new
     end
