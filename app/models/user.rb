@@ -1,9 +1,12 @@
 class User < ApplicationRecord
-  attr_accessor :remember_token
+  attr_accessor :remember_token, :activation_token
 
-  # データベースに保存する前にemail属性を強制的に小文字に変換
+  # データベースに保存する前(作成時や更新時)にemail属性を強制的に小文字に変換
+  # email = email.downcaseだと動かない
   # before_save { self.email = email.downcase } # email = email.downcaseだとローカル変数と認識される
-  before_save { email.downcase! } # email = email.downcaseだと動かない
+  before_save :downcase_email
+  # 作成されたときだけ
+  before_create :create_activation_email
   validates :name, presence: true, length: { maximum: 50 }
   # ドットの連続を誤りとして検出できない
   VALID_EMAIL_REGEX = /\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i
@@ -42,13 +45,46 @@ class User < ApplicationRecord
   end
 
   # 渡されたトークンがダイジェストと一致したらtrueを返す
-  def authenticated?(remember_token)
-    return false if remember_digest.nil?
+  def authenticated?(attribute, token)
+    # selfはなくても良い
+    digest = self.send("#{attribute}_digest")
+    return false if digest.nil?
     # self.remember_digestと同じ意味
-    BCrypt::Password.new(remember_digest).is_password?(remember_token)
+    BCrypt::Password.new(digest).is_password?(token)
   end
 
   def forget
     update_attribute(:remember_digest, nil)
+  end
+
+  # アカウントを有効にする
+  def activate
+    # update_attributeが２回呼ばれるのでデータベースに二回アクセスしてしまう
+    # バリデーションやコールバックが行われない
+    # update_attribute(:is_activated, true)
+    # update_attribute(:activated_at, Time.zone.now)
+
+    # update_attributesはバリデーションやコールバックが行われるが
+    # update_columnsは行われない
+    update_columns(is_activated: true, activated_at: Time.zone.now)
+  end
+
+  # 有効化用のメールを送信する
+  def send_activation_email
+    UserMailer.account_activation(self).deliver_now
+  end
+
+  private
+
+  def downcase_email
+    email.downcase!
+  end
+
+  # 有効化トークンとダイジェストを作成および代入する
+  def create_activation_email
+    # ランダムな文字列生成
+    self.activation_token = User.new_token
+    # ランダムの文字列を暗号化
+    self.activation_digest = User.digest(activation_token)
   end
 end
