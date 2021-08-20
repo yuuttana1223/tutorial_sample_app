@@ -9,6 +9,8 @@ class UsersController < ApplicationController
 
   def show
     @user = User.find(params[:id])
+    @microposts = @user.microposts.paginate(page: params[:page])
+
     # renderやredirect_toの戻り値がtrueなのを利用
     # returnは二重レンダリングの問題を回避するため
     # &&だと優先度の都合で駄目
@@ -65,15 +67,6 @@ class UsersController < ApplicationController
 
   def user_params
     params.require(:user).permit(:name, :email, :password, :password_confirmation)
-  end
-
-  def logged_in_user
-    unless logged_in?
-      # ログインしていない場合に行こうとしていたurlを保存
-      store_location
-      flash[:danger] = "Please log in."
-      redirect_to login_url
-    end
   end
 
   def correct_user

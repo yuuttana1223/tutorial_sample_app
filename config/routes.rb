@@ -1,6 +1,5 @@
 Rails.application.routes.draw do
   get "password_resets/new"
-
   get "password_resets/edit"
 
   root "static_pages#home"
@@ -18,4 +17,5 @@ Rails.application.routes.draw do
   # http://www.example.com/account_activations/q5lt38hQDc_959PVoo6b7A/edit が生成
   resources :account_activations, only: [:edit]
   resources :password_resets, only: [:new, :create, :edit, :update]
+  resources :microposts, only: [:create, :destroy]
 end
