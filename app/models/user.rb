@@ -1,4 +1,7 @@
 class User < ApplicationRecord
+  # ユーザーが破棄された場合、ユーザーのマイクロポストも同様に破棄される
+  has_many :microposts, dependent: :destroy
+
   attr_accessor :remember_token, :activation_token, :reset_token
 
   # データベースに保存する前(作成時や更新時)にemail属性を強制的に小文字に変換
@@ -91,6 +94,14 @@ class User < ApplicationRecord
     # 現在時刻より2時間以上前 (早い) の場合
     # 現在の時間が2時間経たないと2.hours.agoが大きくならない
     reset_sent_at < 2.hours.ago
+  end
+
+  # 試作feedの定義
+  # 完全な実装は次章の「ユーザーをフォローする」を参照
+  def feed
+    # SQLインジェクションを避ける
+    # 特別な意味をもつ文字・記号(', ;)が入力された際に、別の文字列に書き換えてしまう
+    Micropost.where("user_id = ?", id)
   end
 
   private
