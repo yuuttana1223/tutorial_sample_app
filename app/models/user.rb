@@ -1,6 +1,15 @@
 class User < ApplicationRecord
   # ユーザーが破棄された場合、ユーザーのマイクロポストも同様に破棄される
   has_many :microposts, dependent: :destroy
+  has_many :active_relationships, class_name: "Relationship",
+                                  foreign_key: "follower_id",
+                                  dependent: :destroy
+  has_many :passive_relationships, class_name: "Relationship",
+                                   foreign_key: "followed_id",
+                                   dependent: :destroy
+  has_many :following, through: :active_relationships, source: :followed
+  # followersの単数形になっているため、sourceは省略可だが、あえて書いている
+  has_many :followers, through: :passive_relationships, source: :follower
 
   attr_accessor :remember_token, :activation_token, :reset_token
 
@@ -96,12 +105,37 @@ class User < ApplicationRecord
     reset_sent_at < 2.hours.ago
   end
 
-  # 試作feedの定義
-  # 完全な実装は次章の「ユーザーをフォローする」を参照
+  # ユーザーのステータスフィードを返す
   def feed
     # SQLインジェクションを避ける
     # 特別な意味をもつ文字・記号(', ;)が入力された際に、別の文字列に書き換えてしまう
-    Micropost.where("user_id = ?", id)
+    # フォローしている人と自分の投稿
+    # Micropost.where("user_id IN (?) OR user_id = ?", following_ids, id) # idはself.id
+    # Micropost.where("user_id IN (:following_ids) OR user_id = :user_id",
+    #                 following_ids: following_ids, user_id: id)
+    # INはuser_idがたくさんあるときに使う
+    # following_idsは見やすくするためだけなので式展開している
+    following_ids = "SELECT followed_id FROM relationships
+                     WHERE follower_id = :user_id"
+    Micropost.where("user_id IN (#{following_ids})
+                     OR user_id = :user_id", user_id: id)
+  end
+
+  # ユーザーをフォローする
+  def follow(other_user)
+    # relationships.find_or_create_by(followed_id: other_user.id)
+    # 配列の最後に追記(上と同じ意味)
+    following << other_user
+  end
+
+  # ユーザーをフォロー解除する
+  def unfollow(other_user)
+    active_relationships.find_by(followed_id: other_user.id).destroy
+  end
+
+  # 現在のユーザーがフォローしてたらtrueを返す
+  def following?(other_user)
+    following.include?(other_user)
   end
 
   private

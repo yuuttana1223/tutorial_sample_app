@@ -1,0 +1,3 @@
+<%# JavaScriptファイル内にHTMLを挿入するときに実行結果をエスケープするために必要 %>
+$("#follow_form").html("<%= escape_javascript(render('users/follow')) %>");
+$("#followers").html('<%= @user.followers.count %>');
